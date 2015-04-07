@@ -135,43 +135,43 @@ module.exports = yeoman.generators.Base.extend({
       );
 
       this.fs.copyTpl(
-        this.templatePath('home.html'),
-        this.destinationPath('app/templates/views/home.html'),
+        this.templatePath('app/views/home/home.html'),
+        this.destinationPath('app/views/home/home.html'),
         { title: this.appName }
       );
 
       // controllers
       this.fs.copyTpl(
-        this.templatePath('scripts/homeController.js'),
-        this.destinationPath('app/scripts/controllers/homeController.js'),
+        this.templatePath('app/views/home/homeController.js'),
+        this.destinationPath('app/views/home/homeController.js'),
         { ngModulName: this._.classify(this.appName) }
       );
 
       this.fs.copyTpl(
-        this.templatePath('scripts/mainController.js'),
-        this.destinationPath('app/scripts/controllers/mainController.js'),
+        this.templatePath('app/views/main/mainController.js'),
+        this.destinationPath('app/views/main/mainController.js'),
         { ngModulName: this._.classify(this.appName) }
       );
 
       this.fs.copyTpl(
-        this.templatePath('scripts/settingsController.js'),
-        this.destinationPath('app/scripts/controllers/settingsController.js'),
+        this.templatePath('app/views/settings/settingsController.js'),
+        this.destinationPath('app/views/settings/settingsController.js'),
         { ngModulName: this._.classify(this.appName) }
       );
 
 
       // utils
       this.fs.copyTpl(
-        this.templatePath('scripts/lodash.js'),
-        this.destinationPath('app/scripts/utils/lodash.js'),
+        this.templatePath('app/views/lodash.js'),
+        this.destinationPath('app/views/lodash.js'),
         { ngModulName: this._.classify(this.appName) }
       );
 
       // app
 
       this.fs.copyTpl(
-        this.templatePath('scripts/app.js'),
-        this.destinationPath('app/scripts/app.js'),
+        this.templatePath('app/views/app.js'),
+        this.destinationPath('app/views/app.js'),
         { ngModulName: this._.classify(this.appName) }
       );
 

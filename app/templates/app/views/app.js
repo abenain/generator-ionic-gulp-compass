@@ -31,7 +31,7 @@ angular.module('<%= ngModulName %>', ['ionic', 'ngCordova', 'ngResource'])
       .state('app', {
         url: '/app',
         abstract: true,
-        templateUrl: 'templates/main.html',
+        templateUrl: 'views/main/main.html',
         controller: 'MainController'
       })
       .state('app.home', {
@@ -39,7 +39,7 @@ angular.module('<%= ngModulName %>', ['ionic', 'ngCordova', 'ngResource'])
         cache: true,
         views: {
           'viewContent': {
-            templateUrl: 'templates/views/home.html',
+            templateUrl: 'views/home/home.html',
             controller: 'HomeController'
           }
         }
@@ -49,7 +49,7 @@ angular.module('<%= ngModulName %>', ['ionic', 'ngCordova', 'ngResource'])
         cache: true,
         views: {
           'viewContent': {
-            templateUrl: 'templates/views/settings.html',
+            templateUrl: 'views/settings/settings.html',
             controller: 'SettingsController'
           }
         }
