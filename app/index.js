@@ -159,20 +159,6 @@ module.exports = yeoman.generators.Base.extend({
         { ngModulName: this._.classify(this.appName) }
       );
 
-      // services
-
-      this.fs.copyTpl(
-        this.templatePath('scripts/ApiService.js'),
-        this.destinationPath('app/scripts/services/ApiService.js'),
-        { ngModulName: this._.classify(this.appName) }
-      );
-
-      // config
-      this.fs.copyTpl(
-        this.templatePath('scripts/apiEndpoint.js'),
-        this.destinationPath('app/scripts/config/apiEndpoint.js'),
-        { ngModulName: this._.classify(this.appName) }
-      );
 
       // utils
       this.fs.copyTpl(
