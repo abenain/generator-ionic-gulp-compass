@@ -1,41 +1,36 @@
 'use strict';
 
-var appName = '<%= ngModulName %>';
-
-var gulp = require('gulp');
-var plugins = require('gulp-load-plugins')();
-var del = require('del');
-var beep = require('beepbeep');
-var express = require('express');
-var path = require('path');
-var open = require('open');
-var stylish = require('jshint-stylish');
-var connectLr = require('connect-livereload');
-var streamqueue = require('streamqueue');
-var runSequence = require('run-sequence');
-var merge = require('merge-stream');
-var ripple = require('ripple-emulator');
-
-/**
- * Parse arguments
- */
-var args = require('yargs')
-  .alias('e', 'emulate')
-  .alias('b', 'build')
-  .alias('r', 'run')
-  // remove all debug messages (console.logs, alerts etc) from release build
-  .alias('release', 'strip-debug')
-  .default('build', false)
-  .default('port', 9000)
-  .default('strip-debug', false)
-  .argv;
-
-var build = !!(args.build || args.emulate || args.run);
-var emulate = args.emulate;
-var run = args.run;
-var port = args.port;
-var stripDebug = !!args.stripDebug;
-var targetDir = path.resolve(build ? 'www' : '.tmp');
+var appName     = '<%= ngModulName %>',
+    gulp        = require('gulp'),
+    plugins     = require('gulp-load-plugins')(),
+    del         = require('del'),
+    beep        = require('beepbeep'),
+    express     = require('express'),
+    path        = require('path'),
+    open        = require('open'),
+    stylish     = require('jshint-stylish'),
+    connectLr   = require('connect-livereload'),
+    streamqueue = require('streamqueue'),
+    runSequence = require('run-sequence'),
+    merge       = require('merge-stream'),
+    ripple      = require('ripple-emulator'),
+    /* Parse arguments */
+    args        = require('yargs')
+      .alias('e', 'emulate')
+      .alias('b', 'build')
+      .alias('r', 'run')
+      // remove all debug messages (console.logs, alerts etc) from release build
+      .alias('release', 'strip-debug')
+      .default('build', false)
+      .default('port', 9000)
+      .default('strip-debug', false)
+      .argv,
+    build = !!(args.build || args.emulate || args.run),
+    emulate = args.emulate,
+    run = args.run,
+    port = args.port,
+    stripDebug = !!args.stripDebug,
+    targetDir = path.resolve(build ? 'www' : '.tmp');
 
 // if we just use emualate or run without specifying platform, we assume iOS
 // in this case the value returned from yargs would just be true
@@ -66,12 +61,12 @@ gulp.task('clean', function (done) {
 gulp.task('styles', function () {
 
   var options = {
-    project   : path.join(__dirname, 'app', 'styles'),
-    http_path : "/",
-    css       : 'stylesheets',
-    sass      : 'sass',
-    images    : "images",
-    style     : build ? 'compressed' : 'expanded'
+    project  : path.join(__dirname, 'app', 'styles'),
+    http_path: "/",
+    css      : 'stylesheets',
+    sass     : 'sass',
+    images   : "images",
+    style    : build ? 'compressed' : 'expanded'
   };
 
 
@@ -210,7 +205,22 @@ gulp.task('vendor', function () {
 gulp.task('index', ['jsHint', 'scripts'], function () {
 
   // build has a '-versionnumber' suffix
-  var cssNaming = 'dist/main*.css';
+  var cssNaming = 'dist/main*.css',
+      env = 'dev',
+      filename;
+
+  if (emulate) {
+    env = 'test';
+  } else if (build || run) {
+    env = process.env.TARGET || 'test';
+  }
+
+
+  // Read the settings from the right file
+  filename = 'config.' + env + '.json';
+
+  // inject vendor.js
+
 
   // injects 'src' into index.html at position 'tag'
   var _inject = function (src, tag) {
@@ -238,6 +248,24 @@ gulp.task('index', ['jsHint', 'scripts'], function () {
     .pipe(plugins.if(build,
       _inject(gulp.src('dist/app*.js', {cwd: targetDir}), 'app'),
       _inject(_getAllScriptSources(), 'app')
+    ))
+    // inject config
+    .pipe(plugins.inject(gulp.src([path.join('app', 'config', filename)]), {
+        starttag : '<!-- inject:config -->',
+        transform: function (filepath, file) {
+          var settings = JSON.parse(file.contents.toString('utf8')),
+              insertString = '<script type="application/javascript">';
+
+          insertString += 'angular.module("' + appName + '",[])';
+
+          for (var key in settings) {
+            insertString += '.constant("' + key + '", "' + settings[key] + '")';
+          }
+          insertString += ';</script>';
+
+          return (insertString);
+        }
+      }
     ))
 
     .pipe(gulp.dest(targetDir))
@@ -308,6 +336,7 @@ gulp.task('watchers', function () {
   gulp.watch('./vendor.json', ['vendor']);
   gulp.watch('app/views/**/*.html', ['index']);
   gulp.watch('app/index.html', ['index']);
+  gulp.watch('app/config/*.json', ['index']);
   gulp.watch(targetDir + '/**')
     .on('change', plugins.livereload.changed)
     .on('error', errorHandler);
