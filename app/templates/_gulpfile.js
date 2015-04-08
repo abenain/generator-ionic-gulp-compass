@@ -65,10 +65,21 @@ gulp.task('clean', function (done) {
 // precompile .scss and concat with ionic.css
 gulp.task('styles', function () {
 
-  var options = build ? {style: 'compressed'} : {style: 'expanded'};
+  var options = {
+    project   : path.join(__dirname, 'app', 'styles'),
+    http_path : "/",
+    css       : 'stylesheets',
+    sass      : 'sass',
+    images    : "images",
+    style     : build ? 'compressed' : 'expanded'
+  };
 
-  var sassStream = plugins.rubySass('app/styles/main.scss', options)
-    .pipe(plugins.autoprefixer('last 1 Chrome version', 'last 3 iOS versions', 'last 3 Android versions'))
+
+  var sassStream = gulp.src('./app/styles/sass/main.scss')
+    .pipe(plugins.compass(options))
+    .pipe(plugins.autoprefixer('last 1 Chrome version', 'last 3 iOS versions', 'last 3 Android versions'));
+  /*var sassStream = plugins.rubySass('app/styles/main.scss', options)
+   .pipe(plugins.autoprefixer('last 1 Chrome version', 'last 3 iOS versions', 'last 3 Android versions'))*/
 
   var cssStream = gulp
     .src('bower_components/ionic/css/ionic.min.css');
@@ -77,7 +88,7 @@ gulp.task('styles', function () {
     .pipe(plugins.concat('main.css'))
     .pipe(plugins.if(build, plugins.stripCssComments()))
     .pipe(plugins.if(build && !emulate, plugins.rev()))
-    .pipe(gulp.dest(path.join(targetDir, 'styles')))
+    .pipe(gulp.dest(path.join(targetDir, 'dist')))
     .on('error', errorHandler);
 });
 
@@ -125,7 +136,7 @@ gulp.task('scripts', function () {
 // copy fonts
 gulp.task('fonts', function () {
   return gulp
-    .src(['app/fonts/*.*', 'bower_components/ionic/fonts/*.*'])
+    .src(['app/styles/fonts/*.*', 'bower_components/ionic/fonts/*.*'])
 
     .pipe(gulp.dest(path.join(targetDir, 'fonts')))
 
@@ -143,13 +154,13 @@ gulp.task('templates', function () {
 
 // generate iconfont
 gulp.task('iconfont', function () {
-  return gulp.src('app/icons/*.svg', {
+  return gulp.src('app/styles/icons/*.svg', {
     buffer: false
   })
     .pipe(plugins.iconfontCss({
       fontName  : 'ownIconFont',
-      path      : 'app/icons/own-icons-template.css',
-      targetPath: '../styles/own-icons.css',
+      path      : 'app/styles/icons/own-icons-template.css',
+      targetPath: '../stylesheets/own-icons.css',
       fontPath  : '../fonts/'
     }))
     .pipe(plugins.iconfont({
@@ -161,7 +172,7 @@ gulp.task('iconfont', function () {
 
 // copy images
 gulp.task('images', function () {
-  return gulp.src('app/images/**/*.*')
+  return gulp.src('app/styles/images/**/*.*')
     .pipe(gulp.dest(path.join(targetDir, 'images')))
 
     .on('error', errorHandler);
@@ -199,7 +210,7 @@ gulp.task('vendor', function () {
 gulp.task('index', ['jsHint', 'scripts'], function () {
 
   // build has a '-versionnumber' suffix
-  var cssNaming = 'styles/main*';
+  var cssNaming = 'dist/main*.css';
 
   // injects 'src' into index.html at position 'tag'
   var _inject = function (src, tag) {
@@ -289,9 +300,9 @@ gulp.task('ripple', ['scripts', 'styles', 'watchers'], function () {
 gulp.task('watchers', function () {
   plugins.livereload.listen();
   gulp.watch('app/styles/**/*.scss', ['styles']);
-  gulp.watch('app/fonts/**', ['fonts']);
-  gulp.watch('app/icons/**', ['iconfont']);
-  gulp.watch('app/images/**', ['images']);
+  gulp.watch('app/styles/fonts/**', ['fonts']);
+  gulp.watch('app/styles/icons/**', ['iconfont']);
+  gulp.watch('app/styles/images/**', ['images']);
   gulp.watch('app/*.js', ['index']);
   gulp.watch('app/views/**/*.js', ['index']);
   gulp.watch('./vendor.json', ['vendor']);
